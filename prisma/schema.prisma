@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// npx prisma generate
+// npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Playlist {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  pieceId     String[]    @db.ObjectId
+  pieces      Piece[]     @relation(fields: [pieceId], references: [id])
+  musiciansId String[]    @db.ObjectId
+  Musicians   Musicians[] @relation(fields: [musiciansId], references: [id])
+}
+
+model Musicians {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  link        String?
+  email       String
+  playlistsId String[]   @db.ObjectId
+  playlists   Playlist[] @relation(fields: [playlistsId], references: [id])
+  gigs        Gig[]
+}
+
+model Piece {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  name       String     @unique
+  composer   String
+  length     Int
+  link       String?
+  playlistId String[]   @db.ObjectId
+  playlist   Playlist[] @relation(fields: [playlistId], references: [id])
+  order      Order?     @relation(fields: [orderId], references: [id])
+  orderId    String?    @db.ObjectId
+}
+
+model Order {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  pieces Piece[]
+  Gig    Gig?    @relation(fields: [gigId], references: [id])
+  gigId  String? @db.ObjectId
+}
+
+model Gig {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  date        DateTime
+  location    String
+  length      Int
+  musiciansId String?    @db.ObjectId
+  Musicians   Musicians? @relation(fields: [musiciansId], references: [id])
+  orderId     String?    @db.ObjectId
+  order       Order[]
+}
